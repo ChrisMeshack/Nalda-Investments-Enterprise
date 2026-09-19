@@ -64,6 +64,7 @@ include __DIR__ . '/../includes/header.php';
 
 <div class="admin-panel" style="margin-top: 30px;">
     <h3>Manage Users</h3>
+    <div class="table-wrap">
     <table>
         <thead>
             <tr>
@@ -82,17 +83,18 @@ include __DIR__ . '/../includes/header.php';
                     <td><?php echo htmlspecialchars($u['email']); ?></td>
                     <td><?php echo ucfirst($u['role']); ?></td>
                     <td>
-                        <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="editUser(<?php echo htmlspecialchars(json_encode($u)); ?>)">Edit</button>
+                        <button class="btn btn-sm" onclick="editUser(<?php echo htmlspecialchars(json_encode($u)); ?>)">Edit</button>
                         <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this user?');">
                             <input type="hidden" name="action" value="delete_user">
                             <input type="hidden" name="user_id" value="<?php echo $u['id']; ?>">
-                            <button type="submit" class="btn" style="background-color: #e74c3c; padding: 5px 10px; font-size: 0.8rem;">Delete</button>
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
+    </div>
 </div>
 
 <!-- Edit User Modal/Form -->

@@ -36,6 +36,9 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* Prevent any child from creating horizontal scroll */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -43,6 +46,7 @@ body {
   background: var(--bg);
   color: var(--text);
   min-width: 0;
+  max-width: 100%;
   overflow-x: hidden;
   line-height: 1.55;
   /* stick footer to bottom even on short pages */
@@ -1218,7 +1222,20 @@ th, td {
   padding: 12px 14px;
   text-align: left;
   border-bottom: 1px solid var(--border);
-  white-space: nowrap;
+}
+
+/* Only prevent wrapping on desktop where there's room */
+@media (min-width: 640px) {
+  th, td { white-space: nowrap; }
+}
+
+/* On mobile, allow wrapping and tighten padding */
+@media (max-width: 639px) {
+  th, td {
+    padding: 8px 10px;
+    font-size: .82rem;
+    word-break: break-word;
+  }
 }
 
 th {

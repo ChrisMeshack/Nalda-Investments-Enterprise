@@ -175,6 +175,7 @@ include __DIR__ . '/../includes/header.php';
 
 <div class="admin-panel" style="margin-top: 30px;">
     <h3>Manage Products</h3>
+    <div class="table-wrap">
     <table>
         <thead>
             <tr>
@@ -195,17 +196,18 @@ include __DIR__ . '/../includes/header.php';
                     <td><?php echo $p['discount_percentage']; ?>%</td>
                     <td><?php echo $p['is_flash_sale'] ? 'Yes' : 'No'; ?></td>
                     <td>
-                        <button class="btn" style="padding: 5px; font-size: 0.8rem;" onclick='editProduct(<?php echo json_encode($p, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>Edit</button>
+                        <button class="btn btn-sm" onclick='editProduct(<?php echo json_encode($p, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>Edit</button>
                         <form method="POST" style="display:inline;" onsubmit="return confirm('Delete product?');">
                             <input type="hidden" name="action" value="delete_product">
                             <input type="hidden" name="product_id" value="<?php echo $p['id']; ?>">
-                            <button type="submit" class="btn" style="background-color: #e74c3c; padding: 5px; font-size: 0.8rem;">Delete</button>
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
+    </div>
 </div>
 
 <!-- Edit Product Form (Hidden by default) -->
@@ -268,14 +270,15 @@ include __DIR__ . '/../includes/header.php';
 
 <div class="admin-panel" style="margin-top: 30px;">
     <h3>Recent Orders</h3>
+    <div class="table-wrap">
     <table>
         <thead>
             <tr>
                 <th>Order ID</th>
                 <th>Customer</th>
-                <th>Total Amount</th>
+                <th>Total</th>
                 <th>Status</th>
-                <th>Ref Number</th>
+                <th>Ref No.</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -293,13 +296,13 @@ include __DIR__ . '/../includes/header.php';
                             <input type="hidden" name="action" value="update_order_status">
                             <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
                             <input type="hidden" name="status" value="verified">
-                            <button type="submit" class="btn" style="background-color: #2ecc71; padding: 5px; font-size: 0.8rem;">Verify</button>
+                            <button type="submit" class="btn btn-sm btn-primary">Verify</button>
                         </form>
                         <form method="POST" style="display:inline;">
                             <input type="hidden" name="action" value="update_order_status">
                             <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
                             <input type="hidden" name="status" value="rejected">
-                            <button type="submit" class="btn" style="background-color: #e74c3c; padding: 5px; font-size: 0.8rem;">Reject</button>
+                            <button type="submit" class="btn btn-sm btn-danger">Reject</button>
                         </form>
                         <?php else: ?>
                             <em>Completed</em>
@@ -309,6 +312,7 @@ include __DIR__ . '/../includes/header.php';
             <?php endforeach; ?>
         </tbody>
     </table>
+    </div>
 </div>
 
 <script>
