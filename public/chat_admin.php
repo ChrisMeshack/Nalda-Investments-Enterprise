@@ -40,13 +40,16 @@ include __DIR__ . '/../includes/header.php';
     <div class="chat-sidebar">
         <h3>Customers</h3>
         <?php foreach ($customers as $c): ?>
-            <div class="customer-item" onclick="loadChat(<?php echo $c['id']; ?>)">
+            <div class="customer-item" onclick="loadChat(<?php echo $c['id']; ?>, <?php echo json_encode($c['username']); ?>)">
                 <?php echo htmlspecialchars($c['username']); ?>
                 <?php if ($c['unread'] > 0): ?>
                     <span class="unread-badge"><?php echo $c['unread']; ?></span>
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
+        <?php if (empty($customers)): ?>
+            <p style="color:#888;font-size:.9rem;padding:10px 0">No customer chats yet.</p>
+        <?php endif; ?>
     </div>
     
     <div class="chat-box" id="chat-box" style="display: none;">
@@ -63,10 +66,12 @@ include __DIR__ . '/../includes/header.php';
 <script>
 let activeCustomerId = null;
 let chatInterval = null;
+const API_URL = '/Nalda/public/chat_api.php';
 
-function loadChat(customerId) {
+function loadChat(customerId, customerName) {
     activeCustomerId = customerId;
     document.getElementById('chat-box').style.display = 'flex';
+    document.getElementById('chat-title').textContent = '💬 ' + customerName;
     document.getElementById('active_customer_id').value = customerId;
     fetchMessages();
     if (chatInterval) clearInterval(chatInterval);
@@ -75,32 +80,47 @@ function loadChat(customerId) {
 
 function fetchMessages() {
     if (!activeCustomerId) return;
-    fetch('chat_api.php?action=get_admin_chat&customer_id=' + activeCustomerId)
+    fetch(API_URL + '?action=get_admin_chat&customer_id=' + activeCustomerId)
         .then(response => response.json())
         .then(data => {
+            if (!Array.isArray(data)) return;
             const container = document.getElementById('chat-messages');
             container.innerHTML = '';
             data.forEach(msg => {
+                const isMine = msg.sender_id != activeCustomerId;
                 const div = document.createElement('div');
-                div.className = 'message ' + (msg.sender_id == activeCustomerId ? 'received' : 'sent');
+                div.className = 'message ' + (isMine ? 'sent' : 'received');
                 div.textContent = msg.message;
                 container.appendChild(div);
             });
             container.scrollTop = container.scrollHeight;
-        });
+        })
+        .catch(() => {});
 }
 
 document.getElementById('chat-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const message = document.getElementById('chat_input').value;
-    fetch('chat_api.php', {
+    const message = document.getElementById('chat_input').value.trim();
+    if (!message) return;
+    const btn = this.querySelector('button');
+    btn.disabled = true;
+
+    fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'action=send_message&receiver_id=' + activeCustomerId + '&message=' + encodeURIComponent(message)
-    }).then(() => {
-        document.getElementById('chat_input').value = '';
-        fetchMessages();
-    });
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('chat_input').value = '';
+            fetchMessages();
+        } else {
+            alert(data.error || 'Could not send.');
+        }
+    })
+    .catch(() => alert('Network error.'))
+    .finally(() => { btn.disabled = false; });
 });
 </script>
 

@@ -21,85 +21,130 @@
     <script src="../assets/js/main.js?v=<?php echo time(); ?>"></script>
 
     <?php if (isset($_SESSION['user_id']) && $_SESSION['user_role'] === 'customer'): ?>
-    <div class="chat-toggle-btn" id="chat-toggle-btn" onclick="toggleChat()">
-        💬
-    </div>
+    <!-- ── Customer Live Chat Widget ── -->
+    <button class="chat-toggle-btn" id="chat-toggle-btn" aria-label="Open live chat" aria-expanded="false">
+        💬 <span class="chat-unread-dot" id="chat-unread-dot" hidden></span>
+    </button>
 
-    <div class="chat-widget" id="chat-widget">
-        <div class="chat-widget-header" onclick="toggleChat()">
-            <span>Live Chat Support</span>
-            <span>▼</span>
+    <div class="chat-widget" id="chat-widget" role="dialog" aria-label="Live Chat Support" aria-hidden="true">
+        <div class="chat-widget-header" id="chat-widget-header">
+            <span>💬 Live Chat Support</span>
+            <button class="chat-close-btn" aria-label="Close chat">✕</button>
         </div>
-        <div class="chat-widget-messages" id="client-chat-messages">
-            <!-- Messages load here -->
-        </div>
-        <form class="chat-widget-form" id="client-chat-form">
-            <input type="text" id="client_chat_input" placeholder="Type a message..." required>
+        <div class="chat-widget-messages" id="client-chat-messages"></div>
+        <form class="chat-widget-form" id="client-chat-form" autocomplete="off">
+            <input type="text" id="client_chat_input" placeholder="Type a message…" required maxlength="500">
             <button type="submit" class="btn">Send</button>
         </form>
     </div>
 
     <script>
-    let clientChatInterval = null;
+    (function () {
+        'use strict';
 
-    function toggleChat() {
-        const widget = document.getElementById('chat-widget');
+        // Root-relative so it works from any page depth
+        const API_URL  = '/Nalda/public/chat_api.php';
+        const MY_ID    = <?php echo (int) $_SESSION['user_id']; ?>;
         const toggleBtn = document.getElementById('chat-toggle-btn');
-        if (widget.style.display === 'flex') {
-            widget.style.display = 'none';
-            toggleBtn.style.display = 'flex';
-            if (clientChatInterval) clearInterval(clientChatInterval);
-        } else {
-            widget.style.display = 'flex';
-            toggleBtn.style.display = 'none';
-            fetchClientMessages();
-            clientChatInterval = setInterval(fetchClientMessages, 3000);
+        const widget    = document.getElementById('chat-widget');
+        const closeBtn  = widget.querySelector('.chat-close-btn');
+        const form      = document.getElementById('client-chat-form');
+        const input     = document.getElementById('client_chat_input');
+        const messages  = document.getElementById('client-chat-messages');
+        const unreadDot = document.getElementById('chat-unread-dot');
+
+        let isOpen    = false;
+        let pollTimer = null;
+
+        function openChat() {
+            isOpen = true;
+            widget.style.display      = 'flex';
+            widget.setAttribute('aria-hidden', 'false');
+            toggleBtn.setAttribute('aria-expanded', 'true');
+            toggleBtn.style.display   = 'none';
+            if (unreadDot) unreadDot.hidden = true;
+            fetchMessages();
+            pollTimer = setInterval(fetchMessages, 4000);
+            input.focus();
         }
-    }
 
-    function fetchClientMessages() {
-        fetch('chat_api.php?action=get_client_chat')
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) return;
-                const container = document.getElementById('client-chat-messages');
-                container.innerHTML = '';
-                const myId = <?php echo $_SESSION['user_id']; ?>;
-                data.forEach(msg => {
-                    const div = document.createElement('div');
-                    div.className = 'message ' + (msg.sender_id == myId ? 'sent' : 'received');
-                    div.style.marginBottom = '10px';
-                    div.style.padding = '8px 12px';
-                    div.style.borderRadius = '15px';
-                    div.style.maxWidth = '80%';
-                    div.style.clear = 'both';
-                    if (msg.sender_id == myId) {
-                        div.style.background = '#dcf8c6';
-                        div.style.float = 'right';
-                    } else {
-                        div.style.background = '#fff';
-                        div.style.border = '1px solid #ddd';
-                        div.style.float = 'left';
+        function closeChat() {
+            isOpen = false;
+            widget.style.display      = 'none';
+            widget.setAttribute('aria-hidden', 'true');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            toggleBtn.style.display   = 'flex';
+            if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        }
+
+        toggleBtn.addEventListener('click', openChat);
+        closeBtn.addEventListener('click',  closeChat);
+
+        function fetchMessages() {
+            fetch(API_URL + '?action=get_client_chat')
+                .then(r => r.json())
+                .then(data => {
+                    if (!Array.isArray(data)) return;
+                    messages.innerHTML = '';
+                    data.forEach(msg => {
+                        const isMine = parseInt(msg.sender_id) === MY_ID;
+                        const div = document.createElement('div');
+                        div.className = 'chat-msg ' + (isMine ? 'chat-msg--sent' : 'chat-msg--recv');
+
+                        const bubble = document.createElement('div');
+                        bubble.className = 'chat-bubble';
+                        bubble.textContent = msg.message;
+
+                        const meta = document.createElement('span');
+                        meta.className = 'chat-meta';
+                        meta.textContent = isMine ? 'You' : (msg.sender_name || 'Support');
+
+                        div.appendChild(bubble);
+                        div.appendChild(meta);
+                        messages.appendChild(div);
+                    });
+                    messages.scrollTop = messages.scrollHeight;
+
+                    // Show unread dot if chat is closed and there are received messages
+                    if (!isOpen && data.some(m => parseInt(m.sender_id) !== MY_ID && !parseInt(m.is_read))) {
+                        if (unreadDot) unreadDot.hidden = false;
                     }
-                    div.textContent = msg.message;
-                    container.appendChild(div);
-                });
-                container.scrollTop = container.scrollHeight;
-            });
-    }
+                })
+                .catch(() => {}); // silent — don't break the page
+        }
 
-    document.getElementById('client-chat-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const message = document.getElementById('client_chat_input').value;
-        fetch('chat_api.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=send_message&message=' + encodeURIComponent(message)
-        }).then(() => {
-            document.getElementById('client_chat_input').value = '';
-            fetchClientMessages();
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+
+            fetch(API_URL, {
+                method : 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body   : 'action=send_message&message=' + encodeURIComponent(msg)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    input.value = '';
+                    fetchMessages();
+                } else {
+                    alert(data.error || 'Could not send message.');
+                }
+            })
+            .catch(() => alert('Network error. Please try again.'))
+            .finally(() => { submitBtn.disabled = false; });
         });
-    });
+
+        // Start a background poll for unread when chat is closed
+        setInterval(() => {
+            if (!isOpen) fetchMessages();
+        }, 15000);
+
+    })();
     </script>
     <?php endif; ?>
 
