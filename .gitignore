@@ -1,0 +1,25 @@
+# Environment / secrets
+.env
+.env.*
+
+# XAMPP / server logs
+*.log
+error_log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PHP cache
+*.cache
+
+# Temporary / debug scripts (never commit these)
+public/dbcheck.php
+public/fix_passwords.php
