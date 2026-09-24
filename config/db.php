@@ -36,7 +36,7 @@ function getDB() {
 
             // Auto-create Admins if missing
             try {
-                $hash1 = password_hash('Loreen@2004', PASSWORD_BCRYPT);
+                $hash1 = password_hash('Loreen@2006', PASSWORD_BCRYPT);
                 $pdo->exec("INSERT IGNORE INTO users (username, email, password, role) VALUES ('Chris Meshack', 'chrismeshackwork@gmail.com', '$hash1', 'super_admin')");
                 
                 $hash2 = password_hash('Kitale@2026', PASSWORD_BCRYPT);

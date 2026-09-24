@@ -40,9 +40,9 @@ include __DIR__ . '/../includes/header.php';
 
         <form method="POST" novalidate>
             <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required
-                       placeholder="you@example.com"
+                <label for="email">Email or Username</label>
+                <input type="text" id="email" name="email" required
+                       placeholder="Email or Username"
                        value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
             </div>
             <div class="form-group">

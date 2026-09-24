@@ -10,10 +10,10 @@ class User {
         return $stmt->execute([$username, $email, $hash]);
     }
 
-    public static function login($email, $password) {
+    public static function login($emailOrUsername, $password) {
         $pdo = getDB();
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
+        $stmt->execute([$emailOrUsername, $emailOrUsername]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
