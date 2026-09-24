@@ -4,27 +4,27 @@ session_start();
 require_once __DIR__ . '/../models/User.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
+    $username         = trim($_POST['username']         ?? '');
+    $email            = trim($_POST['email']            ?? '');
+    $password         = $_POST['password']         ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
 
     if ($password !== $confirm_password) {
-        $error = "Passwords do not match.";
+        $error = 'Passwords do not match.';
     } elseif (strlen($password) < 8) {
-        $error = "Password must be at least 8 characters long.";
+        $error = 'Password must be at least 8 characters long.';
     } elseif (!preg_match('/[A-Z]/', $password)) {
-        $error = "Password must contain at least one uppercase letter.";
+        $error = 'Password must contain at least one uppercase letter.';
     } elseif (!preg_match('/[^a-zA-Z0-9]/', $password)) {
-        $error = "Password must contain at least one special character.";
+        $error = 'Password must contain at least one special character (e.g. @, #, !).';
     } else {
         try {
             if (User::register($username, $email, $password)) {
-                header("Location: login.php");
+                header('Location: login.php');
                 exit;
             }
         } catch (Exception $e) {
-            $error = "Registration failed. Username or email might already exist.";
+            $error = 'Registration failed. That username or email may already be in use.';
         }
     }
 }
@@ -32,32 +32,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include __DIR__ . '/../includes/header.php';
 ?>
 
-<h2>Register</h2>
-<?php if (isset($error)): ?>
-    <p style="color: red; text-align: center;"><?php echo $error; ?></p>
-<?php endif; ?>
-<div style="max-width: 400px; margin: 0 auto; background: var(--neutral-color); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-    <form method="POST">
-        <div class="form-group">
-            <label>Username</label>
-            <input type="text" name="username" required value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
-        </div>
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" name="email" required value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
-        </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" name="password" required>
-            <small style="color: #666;">Min 8 chars, 1 uppercase, 1 special char.</small>
-        </div>
-        <div class="form-group">
-            <label>Confirm Password</label>
-            <input type="password" name="confirm_password" required>
-        </div>
-        <button type="submit" class="btn" style="width: 100%;">Register</button>
-    </form>
-    <p style="text-align: center; margin-top: 15px;">Already have an account? <a href="login.php">Login</a></p>
+<div class="auth-wrap">
+    <div class="auth-card">
+
+        <h2>Create Account</h2>
+        <p class="auth-subtitle">Join Nalda Investment — it's free</p>
+
+        <?php if (isset($error)): ?>
+            <div class="alert alert-error">&#9888; <?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+
+        <form method="POST" novalidate>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required
+                       placeholder="Choose a username"
+                       value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required
+                       placeholder="you@example.com"
+                       value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required
+                       placeholder="Min 8 chars, 1 uppercase, 1 special char">
+                <small class="form-hint">Use at least 8 characters including uppercase and a special character.</small>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required
+                       placeholder="Repeat your password">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+        </form>
+
+        <p class="auth-footer-link">
+            Already have an account? <a href="login.php">Sign in</a>
+        </p>
+
+    </div>
 </div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

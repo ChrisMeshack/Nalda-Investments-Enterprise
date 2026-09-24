@@ -56,7 +56,7 @@ include __DIR__ . '/../includes/header.php';
 
     <button type="submit" class="btn btn-primary btn-sm">Filter</button>
     <a href="shop.php<?php echo !empty($_GET['category']) ? '?category=' . htmlspecialchars($_GET['category']) : ''; ?>"
-       class="btn btn-sm" style="background:#95a5a6;color:#fff;">Reset</a>
+       class="btn btn-sm btn-secondary">Reset</a>
 </form>
 
 <!-- ── Category pills ───────────────────────────────────── -->
@@ -71,9 +71,9 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- ── Page title + count ───────────────────────────────── -->
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-    <h2 class="section-title" style="margin:0;"><?php echo $activeCatName; ?></h2>
-    <span style="color:var(--text-muted);font-size:.9rem;">
+<div class="shop-title-row">
+    <h1 class="page-title" style="margin:0;border:none;padding:0;"><?php echo $activeCatName; ?></h1>
+    <span class="product-count">
         <?php echo count($products); ?> product<?php echo count($products) !== 1 ? 's' : ''; ?> found
     </span>
 </div>
