@@ -15,6 +15,18 @@ function getDB() {
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
+            // Auto-execute schema if users table is missing
+            try {
+                $check = $pdo->query("SHOW TABLES LIKE 'users'");
+                if ($check->rowCount() == 0) {
+                    $schema = file_get_contents(__DIR__ . '/../sql/schema.sql');
+                    // Remove the CREATE DATABASE and USE statements from schema.sql for InfinityFree
+                    $schema = preg_replace('/CREATE DATABASE IF NOT EXISTS nalda_investments;/i', '', $schema);
+                    $schema = preg_replace('/USE nalda_investments;/i', '', $schema);
+                    $pdo->exec($schema);
+                }
+            } catch(Exception $e) {}
+
             // Auto-migrate tables (fails silently if already done)
             try { $pdo->exec("ALTER TABLE users MODIFY COLUMN role ENUM('super_admin', 'admin', 'customer') DEFAULT 'customer'"); } catch(Exception $e) {}
             try { $pdo->exec("ALTER TABLE products ADD COLUMN discount_percentage INT DEFAULT 0"); } catch(Exception $e) {}

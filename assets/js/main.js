@@ -183,7 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedGrid   = document.getElementById('product-feed');
     const sentinel   = document.getElementById('feed-sentinel');
     const feedLoader = document.getElementById('feed-loader');
-    const feedEnd    = document.getElementById('feed-end');
     const chipsBar   = document.getElementById('category-chips');
 
     // Not on the homepage — bail out of this IIFE only
@@ -351,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!data.has_more) {
           state.done = true;
-          if (feedEnd)  feedEnd.hidden  = false;
           if (sentinel) sentinel.style.display = 'none';
         } else {
           // Only attach the scroll observer after the first batch is in the DOM
@@ -391,7 +389,6 @@ document.addEventListener('DOMContentLoaded', () => {
       state = { category, page: 1, loading: false, done: false };
 
       feedGrid.innerHTML = '';
-      if (feedEnd)  feedEnd.hidden  = true;
       if (sentinel) sentinel.style.display = '';
 
       showSkeletons(10);

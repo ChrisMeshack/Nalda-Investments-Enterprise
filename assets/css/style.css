@@ -1013,6 +1013,9 @@ main .marquee-container:last-child {
   justify-content: center;
   padding: 24px 0;
 }
+.feed-loader[hidden], .feed-end[hidden] {
+  display: none !important;
+}
 
 .spinner {
   width: 36px;

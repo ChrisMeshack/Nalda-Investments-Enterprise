@@ -132,7 +132,4 @@ include __DIR__ . '/../includes/header.php';
     <span class="spinner" aria-label="Loading more products"></span>
 </div>
 
-<!-- ── End-of-feed message ───────────────────────────────── -->
-<div id="feed-end" class="feed-end" hidden>You&rsquo;ve seen everything &#10003;</div>
-
 <?php include __DIR__ . '/../includes/footer.php'; ?>
