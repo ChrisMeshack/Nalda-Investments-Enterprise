@@ -1,10 +1,10 @@
 <?php
 // config/db.php
 
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'nalda_investments');
+define('DB_HOST', 'sql106.infinityfree.com');
+define('DB_USER', 'if0_42939269');
+define('DB_PASS', 'DarajaDaraja11');
+define('DB_NAME', 'if0_42939269_nalda_investments');
 
 function getDB() {
     static $pdo;

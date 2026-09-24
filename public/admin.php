@@ -97,6 +97,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $stmt = $pdo->prepare("UPDATE manual_payments SET status = ? WHERE order_id = ?");
         $stmt->execute([$_POST['status'], $_POST['order_id']]);
         $msg = "Order status updated successfully!";
+    } elseif ($_POST['action'] === 'add_category') {
+        Category::add($_POST['name']);
+        $msg = "Category added successfully!";
+        $categories = Category::getAll(); // Refresh before rendering
+    } elseif ($_POST['action'] === 'delete_category') {
+        Category::delete($_POST['category_id']);
+        $msg = "Category deleted successfully!";
+        $categories = Category::getAll(); // Refresh before rendering
     }
 }
 
@@ -116,6 +124,49 @@ include __DIR__ . '/../includes/header.php';
 
 <div class="admin-panel" style="margin-bottom: 20px;">
     <a href="chat_admin.php" class="btn" style="background-color: #3498db;">Open Live Chat Hub</a>
+</div>
+
+<!-- CATEGORY MANAGEMENT -->
+<div class="admin-panel" style="margin-bottom: 20px;">
+    <h3>Manage Categories</h3>
+    
+    <!-- Add Category -->
+    <form method="POST" style="margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-end;">
+        <input type="hidden" name="action" value="add_category">
+        <div class="form-group" style="margin-bottom: 0; flex: 1;">
+            <label>New Category Name</label>
+            <input type="text" name="name" required placeholder="e.g. Laptops">
+        </div>
+        <button type="submit" class="btn">Add Category</button>
+    </form>
+
+    <!-- List Categories -->
+    <div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Category Name</th>
+                <th style="width: 100px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($categories as $cat): ?>
+            <tr>
+                <td><?php echo $cat['id']; ?></td>
+                <td><?php echo htmlspecialchars($cat['name']); ?></td>
+                <td>
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('Delete category? Products in this category might be affected.');">
+                        <input type="hidden" name="action" value="delete_category">
+                        <input type="hidden" name="category_id" value="<?php echo $cat['id']; ?>">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    </div>
 </div>
 
 <div class="admin-panel">
